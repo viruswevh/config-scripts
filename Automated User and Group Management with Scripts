@@ -1,0 +1,25 @@
+#!/bin/bash
+# Define the group name
+GROUP_NAME="genealogy_team"
+# Create the group if it does not exist
+if ! getent group "$GROUP_NAME" > /dev/null; then
+    groupadd "$GROUP_NAME"
+    echo "Group '$GROUP_NAME' created."
+else
+    echo "Group '$GROUP_NAME' already exists."
+fi
+# List of users to be added (can also be read from a file)
+USER_LIST=("alice" "bob" "charlie" "dave")
+# Loop through each user in the list
+for user in "${USER_LIST[@]}"; do
+    # Check if the user already exists
+    if id "$user" &>/dev/null; then
+        echo "User '$user' already exists."
+    else
+        # Create the user and add to the group
+        useradd "$user"
+        usermod -aG "$GROUP_NAME" "$user"
+        echo "User '$user' created and added to group '$GROUP_NAME'."
+    fi
+done
+echo "Group and users successfully configured."
