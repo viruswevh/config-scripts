@@ -1,0 +1,22 @@
+#!/bin/bash
+# Define the groups to check for excessive permissions
+ADMIN_GROUPS=("sudo" "wheel")
+# Function to check user permissions
+check_user_permissions() {
+    echo "Checking for users with excessive permissions..."
+    for group in "${ADMIN_GROUPS[@]}"; do
+        echo "Users in group '$group':"
+        # List users in the group
+        getent group "$group" | awk -F: '{print $4}' | tr ',' '\n' | while read -r user; do
+            if [ -n "$user" ]; then
+                # Check if the user has a home directory and is not locked
+                if id "$user" &>/dev/null && [ ! "$(passwd -S "$user" | grep 'L')" ]; then
+                    echo "- $user"
+                fi
+            fi
+        done
+    done
+}
+# Main execution
+check_user_permissions
+echo "Audit completed."
