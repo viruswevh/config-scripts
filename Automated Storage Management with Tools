@@ -1,0 +1,41 @@
+name: Configure LVM for North America
+  hosts: storage_servers
+  become: yes  # Run tasks as root
+  tasks:
+  
+    # Step 1: Initialize Physical Volume
+    - name: Initialize physical volume
+      lvm_pv:
+        pvs:
+          - /dev/sdb
+        state: present
+
+    # Step 2: Create Volume Group
+    - name: Create volume group for North America
+      lvm_vg:
+        vg: vg_na
+        pvs:
+          - /dev/sdb
+        state: present
+
+    # Step 3: Create Logical Volume
+    - name: Create logical volume for North America
+      lvm_lv:
+        vg: vg_na
+        lv: lv_na_records
+        size: 1T
+        state: present
+
+    # Step 4: Format the Logical Volume
+    - name: Format the logical volume
+      filesystem:
+        fstype: ext4
+        dev: /dev/vg_na/lv_na_records
+
+    # Step 5: Mount the Logical Volume
+    - name: Mount the logical volume
+      mount:
+        path: /data/na
+        src: /dev/vg_na/lv_na_records
+        fstype: ext4
+        state: mounted
