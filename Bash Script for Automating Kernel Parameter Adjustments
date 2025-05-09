@@ -1,0 +1,37 @@
+#!/bin/bash
+# Define log file
+LOG_FILE="/var/log/kernel_param_adjustments.log"
+# Log function
+log_message() {
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" | tee -a $LOG_FILE
+}
+# Function to apply kernel parameters
+apply_kernel_params() {
+    log_message "Applying kernel parameter adjustments..."
+    # Adjust kernel parameters
+    sysctl -w vm.swappiness=10
+    sysctl -w vm.dirty_ratio=15
+    sysctl -w vm.dirty_background_ratio=5
+    sysctl -w fs.file-max=100000
+    log_message "Kernel parameters successfully applied."
+}
+# Function to make changes persistent
+make_changes_persistent() {
+    log_message "Saving kernel parameter adjustments to /etc/sysctl.conf..."
+    # Backup existing configuration
+    cp /etc/sysctl.conf /etc/sysctl.conf.bak
+    # Append new parameters to sysctl.conf
+    cat <<EOF >> /etc/sysctl.conf
+# Custom kernel parameter adjustments
+vm.swappiness=10
+vm.dirty_ratio=15
+vm.dirty_background_ratio=5
+fs.file-max=100000
+EOF
+    log_message "Kernel parameter adjustments saved to /etc/sysctl.conf."
+}
+# Main execution
+log_message "Starting kernel parameter adjustment script..."
+apply_kernel_params
+make_changes_persistent
+log_message "Script execution completed."
